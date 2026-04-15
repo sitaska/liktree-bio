@@ -34,7 +34,6 @@ export const siteConfig: SiteConfig = {
       url: 'https://example.com/reserva',
       note: 'Plazas semanales limitadas',
       emoji: '🧘',
-      featured: true,
       style: 'row',
     },
     {
@@ -63,10 +62,10 @@ export const siteConfig: SiteConfig = {
     },
   ],
   socials: [
-    { label: 'Instagram', url: 'https://instagram.com', short: 'IG' },
-    { label: 'TikTok', url: 'https://tiktok.com', short: 'TT' },
-    { label: 'Pinterest', url: 'https://pinterest.com', short: 'PT' },
-    { label: 'Email', url: 'mailto:hola@lascositasdesita.com', short: '@' },
+    { label: 'Instagram', url: 'https://instagram.com' },
+    { label: 'TikTok', url: 'https://tiktok.com' },
+    { label: 'Pinterest', url: 'https://pinterest.com' },
+    { label: 'Email', url: 'mailto:hola@lascositasdesita.com' },
   ],
   seo: {
     title: 'Las Cositas de Sita | Todos mis enlaces',
@@ -74,9 +73,51 @@ export const siteConfig: SiteConfig = {
       'Landing tipo Linktree de Las Cositas de Sita para centralizar redes, recursos, tienda y contacto.',
     favicon: '/favicon.svg',
   },
-  sections: {
-    highlightedTitle: 'Destacado',
-    servicesTitle: 'Servicios',
-    moreLinksTitle: 'Más enlaces',
-  },
+  sections: [
+    {
+      title: 'Destacado',
+      links: [
+        {
+          label: 'Canal de YouTube',
+          url: 'https://youtube.com',
+          note: 'Practicas y consejos',
+          style: 'banner',
+          thumbnail:
+            'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80',
+          ctaLabel: 'Ver ahora',
+        },
+      ],
+    },
+    {
+      title: 'Servicios',
+      links: [
+        {
+          label: 'Reserva una sesion',
+          url: 'https://example.com/reserva',
+          note: 'Plazas semanales limitadas',
+          emoji: '🧘',
+          style: 'row',
+        },
+      ],
+    },
+    {
+      title: 'Más enlaces',
+      links: [
+        {
+          label: 'Instagram',
+          url: 'https://instagram.com',
+          note: 'Dia a dia y novedades',
+          emoji: '📸',
+          style: 'row',
+        },
+        {
+          label: 'Podcast',
+          url: 'https://spotify.com',
+          note: 'Episodios semanales',
+          emoji: '🎙️',
+          style: 'row',
+        },
+      ],
+    },
+  ],
 };

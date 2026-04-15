@@ -3,15 +3,13 @@ import Layout from '../layouts/Layout.astro';
 import { siteConfig as fallbackConfig } from '../data/site';
 import { getHomepageData } from '../lib/sanity';
 
-const { profile, banners, featuredLinks, socials, seo, sections } = await getHomepageData(fallbackConfig);
-const styledBannerLinks = featuredLinks.filter((link) => link.style === 'banner');
-const rowLinks = featuredLinks.filter((link) => link.style !== 'banner');
-const primaryLinks = rowLinks.filter((link) => Boolean(link.featured));
-const secondaryLinks = rowLinks.filter((link) => !link.featured);
+const { profile, socials, seo, sections } = await getHomepageData(fallbackConfig);
 
 const socialIconSvg: Record<string, string> = {
 	instagram:
 		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7m11 1.5a1.25 1.25 0 1 1-1.25 1.25A1.25 1.25 0 0 1 18 5.5M12 7a5 5 0 1 1-5 5 5 5 0 0 1 5-5m0 2a3 3 0 1 0 3 3 3 3 0 0 0-3-3Z"/></svg>',
+	youtube:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M23 12s0-3.4-.4-5c-.2-.9-.9-1.6-1.8-1.8C19.2 4.8 12 4.8 12 4.8s-7.2 0-8.8.4C2.3 5.4 1.6 6.1 1.4 7 1 8.6 1 12 1 12s0 3.4.4 5c.2.9.9 1.6 1.8 1.8 1.6.4 8.8.4 8.8.4s7.2 0 8.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.6.4-5 .4-5M10 15.5v-7l6 3.5-6 3.5Z"/></svg>',
 	tiktok:
 		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.5 3c.3 2 1.8 3.8 3.8 4.3v2.8a7.2 7.2 0 0 1-3.8-1.2v6.4A5.3 5.3 0 1 1 11.2 10a5.8 5.8 0 0 1 1.2.1v2.8a2.8 2.8 0 0 0-1.1-.2 2.6 2.6 0 1 0 2.7 2.6V3h2.5Z"/></svg>',
 	pinterest:
@@ -20,12 +18,32 @@ const socialIconSvg: Record<string, string> = {
 		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2m0 2v.5L12 13l8-5.5V7H4m16 10V9.9l-7.4 5.1a1 1 0 0 1-1.2 0L4 9.9V17h16Z"/></svg>',
 	linkedin:
 		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6 8a1.8 1.8 0 1 1 0-3.5A1.8 1.8 0 0 1 6 8M4.5 9.5h3V20h-3V9.5m5.3 0h2.9V11h.1a3.2 3.2 0 0 1 2.9-1.6c3.1 0 3.7 2 3.7 4.7V20h-3v-5.1c0-1.2 0-2.8-1.7-2.8s-2 1.4-2 2.7V20h-3V9.5Z"/></svg>',
+	facebook:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.5 21v-7h2.3l.4-2.8h-2.7V9.5c0-.8.2-1.4 1.4-1.4h1.5V5.6c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.9v1.8H8V14h2.5v7h3Z"/></svg>',
+	x:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M18.3 3h2.8l-6.1 7 7.2 11h-5.7l-4.4-6.8L6.2 21H3.4l6.5-7.4L3 3h5.8l4 6.1L18.3 3Zm-1 16h1.6L7.9 4.9H6.2L17.3 19Z"/></svg>',
+	whatsapp:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.5 3.5A11.8 11.8 0 0 0 2.9 18.9L1.5 23l4.2-1.3A11.8 11.8 0 1 0 20.5 3.5Zm-8.7 18.2a9.9 9.9 0 0 1-5-1.3l-.4-.2-2.5.8.8-2.4-.3-.4A9.9 9.9 0 1 1 11.8 21.7Zm5.4-7.4c-.3-.2-1.7-.8-1.9-.9-.3-.1-.5-.2-.7.2-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1a8.1 8.1 0 0 1-2.4-1.5 9 9 0 0 1-1.6-2c-.2-.3 0-.4.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.8-1-2.4-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5 0-.8.3-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.1-.3-.2-.6-.4Z"/></svg>',
 	default:
 		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m6.9 9h-3.1a15.7 15.7 0 0 0-1-5.2A8.1 8.1 0 0 1 18.9 11M12 4.1c.8 1.1 1.5 3.4 1.8 6H10.2c.3-2.6 1-4.9 1.8-6M4.9 13h3.1a15.7 15.7 0 0 0 1 5.2A8.1 8.1 0 0 1 4.9 13m3.1-2H4.9a8.1 8.1 0 0 1 4.2-5.2A15.7 15.7 0 0 0 8 11m2.2 2h3.6c-.3 2.6-1 4.9-1.8 6-.8-1.1-1.5-3.4-1.8-6m0-2c.3-2.6 1-4.9 1.8-6 .8 1.1 1.5 3.4 1.8 6h-3.6m4.7 7.2a15.7 15.7 0 0 0 1-5.2h3.1a8.1 8.1 0 0 1-4.1 5.2Z"/></svg>',
 };
 
-const getSocialIcon = (label: string) => {
-	const key = label.trim().toLowerCase();
+const getSocialKey = (label: string, url: string) => {
+	const value = `${label} ${url}`.toLowerCase();
+	if (value.includes('instagram')) return 'instagram';
+	if (value.includes('youtube') || value.includes('youtu.be')) return 'youtube';
+	if (value.includes('tiktok')) return 'tiktok';
+	if (value.includes('pinterest')) return 'pinterest';
+	if (value.includes('linkedin')) return 'linkedin';
+	if (value.includes('facebook')) return 'facebook';
+	if (value.includes('twitter') || value.includes('x.com')) return 'x';
+	if (value.includes('whatsapp') || value.includes('wa.me')) return 'whatsapp';
+	if (value.includes('mailto') || value.includes('email') || value.includes('gmail')) return 'email';
+	return 'default';
+};
+
+const getSocialIcon = (label: string, url: string) => {
+	const key = getSocialKey(label, url);
 	return socialIconSvg[key] ?? socialIconSvg.default;
 };
 ---
@@ -50,7 +68,7 @@ const getSocialIcon = (label: string) => {
 				{
 					socials.map((social) => (
 						<a href={social.url} target="_blank" rel="noreferrer" aria-label={social.label} title={social.label}>
-							<span class="social-icon" set:html={getSocialIcon(social.label)}></span>
+							<span class="social-icon" set:html={getSocialIcon(social.label, social.url)}></span>
 							<span class="sr-only">{social.label}</span>
 						</a>
 					))
@@ -60,71 +78,33 @@ const getSocialIcon = (label: string) => {
 			<p class="description">{profile.description}</p>
 
 			{
-				(styledBannerLinks.length > 0 || banners.length > 0) && (
-					<section class="group" aria-label="Destacado">
-						<p class="group-title">{sections.highlightedTitle}</p>
+				sections.map((section) => (
+					<section class="group" aria-label={section.title}>
+						<p class="group-title">{section.title}</p>
 						<div class="group-list">
-							{styledBannerLinks.map((link) => (
-								<article class="banner-card">
-									{link.thumbnail && <img class="banner-thumb" src={link.thumbnail} alt={link.label} loading="lazy" />}
-									<div class="banner-copy">
-										<strong>{link.label}</strong>
-										<small>{link.note}</small>
-									</div>
-									<a class="banner-cta" href={link.url} target="_blank" rel="noreferrer">{link.ctaLabel ?? 'Ver'}</a>
-								</article>
-							))}
-							{banners.map((banner) => (
-								<article class="banner-card">
-									{banner.image && <img class="banner-thumb" src={banner.image} alt={banner.title} loading="lazy" />}
-									<div class="banner-copy">
-										<strong>{banner.title}</strong>
-										<small>{banner.subtitle}</small>
-									</div>
-									<a class="banner-cta" href={banner.buttonUrl} target="_blank" rel="noreferrer">{banner.buttonLabel || 'Ver'}</a>
-								</article>
-							))}
+							{section.links.map((link) =>
+								link.style === 'banner' ? (
+									<article class="banner-card">
+										{link.thumbnail && <img class="banner-thumb" src={link.thumbnail} alt={link.label} loading="lazy" />}
+										<div class="banner-copy">
+											<strong>{link.label}</strong>
+											<small>{link.note}</small>
+										</div>
+										<a class="banner-cta" href={link.url} target="_blank" rel="noreferrer">{link.ctaLabel ?? 'Ver'}</a>
+									</article>
+								) : (
+									<a class="row-link" href={link.url} target="_blank" rel="noreferrer">
+										<span class="row-icon">{link.emoji ?? '🔗'}</span>
+										<span class="row-copy">
+											<strong>{link.label}</strong>
+											<small>{link.note}</small>
+										</span>
+									</a>
+								)
+							)}
 						</div>
 					</section>
-				)
-			}
-
-			{
-				primaryLinks.length > 0 && (
-					<section class="group" aria-label="Servicios">
-						<p class="group-title">{sections.servicesTitle}</p>
-						<div class="group-list">
-							{primaryLinks.map((link) => (
-								<a class="row-link" href={link.url} target="_blank" rel="noreferrer">
-									<span class="row-icon">{link.emoji ?? '🔗'}</span>
-									<span class="row-copy">
-										<strong>{link.label}</strong>
-										<small>{link.note}</small>
-									</span>
-								</a>
-							))}
-						</div>
-					</section>
-				)
-			}
-
-			{
-				secondaryLinks.length > 0 && (
-					<section class="group" aria-label="Mas enlaces">
-						<p class="group-title">{sections.moreLinksTitle}</p>
-						<div class="group-list">
-							{secondaryLinks.map((link) => (
-								<a class="row-link" href={link.url} target="_blank" rel="noreferrer">
-									<span class="row-icon">{link.emoji ?? '🔗'}</span>
-									<span class="row-copy">
-										<strong>{link.label}</strong>
-										<small>{link.note}</small>
-									</span>
-								</a>
-							))}
-						</div>
-					</section>
-				)
+				))
 			}
 
 			<p class="signature">Las Cositas de Sita</p>

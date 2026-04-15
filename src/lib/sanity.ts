@@ -44,6 +44,18 @@ const homepageQuery = `*[_type == "homepage"][0]{
   seo
 }`;
 
+function mapLink(link: Record<string, unknown>) {
+  return {
+    label: String(link.label ?? ''),
+    url: String(link.url ?? ''),
+    note: String(link.note ?? ''),
+    emoji: link.emoji ? String(link.emoji) : undefined,
+    style: link.style === 'banner' ? 'banner' : 'row',
+    thumbnail: imageUrl(link.thumbnail, ''),
+    ctaLabel: link.ctaLabel ? String(link.ctaLabel) : undefined,
+  };
+}
+
 export async function getHomepageData(fallback: SiteConfig): Promise<SiteConfig> {
   if (!client) {
     return fallback;
@@ -55,6 +67,42 @@ export async function getHomepageData(fallback: SiteConfig): Promise<SiteConfig>
     if (!data) {
       return fallback;
     }
+
+    const legacyFeaturedLinks = Array.isArray(data.featuredLinks)
+      ? data.featuredLinks.map((link: Record<string, unknown>) => mapLink(link))
+      : fallback.featuredLinks;
+
+    const legacyBanners = Array.isArray(data.banners)
+      ? data.banners.map((banner: Record<string, unknown>) => ({
+          label: String(banner.title ?? ''),
+          url: String(banner.buttonUrl ?? ''),
+          note: String(banner.subtitle ?? ''),
+          style: 'banner' as const,
+          thumbnail: imageUrl(banner.image, ''),
+          ctaLabel: String(banner.buttonLabel ?? 'Ver'),
+        }))
+      : [];
+
+    const cmsSections = Array.isArray(data.sections)
+      ? data.sections
+          .map((section: Record<string, unknown>) => ({
+            title: String(section.title ?? '').trim(),
+            links: Array.isArray(section.links)
+              ? section.links
+                  .map((link: Record<string, unknown>) => mapLink(link))
+                  .filter((link: { label: string; url: string }) => Boolean(link.label) && Boolean(link.url))
+              : [],
+          }))
+          .filter((section: { title: string; links: unknown[] }) => Boolean(section.title) && section.links.length > 0)
+      : [];
+
+    const legacyBannerLinks = [...legacyBanners, ...legacyFeaturedLinks.filter((link: { style?: string }) => link.style === 'banner')];
+    const legacyRowLinks = legacyFeaturedLinks.filter((link: { style?: string }) => link.style !== 'banner');
+    const fallbackLegacySections = [
+      { title: 'Destacado', links: legacyBannerLinks },
+      { title: 'Servicios', links: legacyRowLinks.filter((link: { note?: string }) => /servicio|reserva|sesion/i.test(link.note ?? '')) },
+      { title: 'Más enlaces', links: legacyRowLinks.filter((link: { note?: string }) => !/servicio|reserva|sesion/i.test(link.note ?? '')) },
+    ].filter((section) => section.links.length > 0);
 
     return {
       profile: {
@@ -73,23 +121,11 @@ export async function getHomepageData(fallback: SiteConfig): Promise<SiteConfig>
             buttonUrl: String(banner.buttonUrl ?? ''),
           }))
         : fallback.banners,
-      featuredLinks: Array.isArray(data.featuredLinks)
-        ? data.featuredLinks.map((link: Record<string, unknown>) => ({
-            label: String(link.label ?? ''),
-            url: String(link.url ?? ''),
-            note: String(link.note ?? ''),
-            emoji: link.emoji ? String(link.emoji) : undefined,
-            featured: Boolean(link.featured),
-            style: link.style === 'banner' ? 'banner' : 'row',
-            thumbnail: imageUrl(link.thumbnail, ''),
-            ctaLabel: link.ctaLabel ? String(link.ctaLabel) : undefined,
-          }))
-        : fallback.featuredLinks,
+      featuredLinks: legacyFeaturedLinks,
       socials: Array.isArray(data.socials)
         ? data.socials.map((social: Record<string, unknown>) => ({
             label: String(social.label ?? ''),
             url: String(social.url ?? ''),
-            short: String(social.short ?? ''),
           }))
         : fallback.socials,
       seo: {
@@ -97,11 +133,7 @@ export async function getHomepageData(fallback: SiteConfig): Promise<SiteConfig>
         description: data.seo?.description ?? fallback.seo.description,
         favicon: imageUrl(data.seo?.favicon, fallback.seo.favicon ?? '/favicon.svg', 96),
       },
-      sections: {
-        highlightedTitle: data.sections?.highlightedTitle ?? fallback.sections.highlightedTitle,
-        servicesTitle: data.sections?.servicesTitle ?? fallback.sections.servicesTitle,
-        moreLinksTitle: data.sections?.moreLinksTitle ?? fallback.sections.moreLinksTitle,
-      },
+      sections: cmsSections.length > 0 ? cmsSections : fallbackLegacySections.length > 0 ? fallbackLegacySections : fallback.sections,
     };
   } catch {
     return fallback;

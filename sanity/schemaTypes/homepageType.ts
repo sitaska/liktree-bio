@@ -42,51 +42,99 @@ export const homepageType = defineType({
       ],
     }),
     defineField({
-      name: 'featuredLinks',
-      title: 'Links principales',
+      name: 'sections',
+      title: 'Secciones de enlaces',
       type: 'array',
       of: [
         {
           type: 'object',
           fields: [
-            defineField({ name: 'label', title: 'Texto', type: 'string', validation: (rule) => rule.required() }),
-            defineField({ name: 'url', title: 'URL', type: 'url', validation: (rule) => rule.required() }),
-            defineField({ name: 'note', title: 'Nota', type: 'string' }),
-            defineField({ name: 'emoji', title: 'Emoji', type: 'string' }),
-            defineField({ name: 'featured', title: 'Destacado', type: 'boolean', initialValue: false }),
+            defineField({ name: 'title', title: 'Nombre de la sección', type: 'string', validation: (rule) => rule.required() }),
             defineField({
-              name: 'style',
-              title: 'Tipo visual',
-              type: 'string',
-              initialValue: 'row',
-              options: {
-                list: [
-                  { title: 'Fila normal', value: 'row' },
-                  { title: 'Banner', value: 'banner' },
-                ],
-                layout: 'radio',
-              },
-            }),
-            defineField({
-              name: 'thumbnail',
-              title: 'Miniatura (solo banner)',
-              type: 'image',
-              options: { hotspot: true },
-              hidden: ({ parent }) => parent?.style !== 'banner',
-            }),
-            defineField({
-              name: 'ctaLabel',
-              title: 'Texto boton (solo banner)',
-              type: 'string',
-              hidden: ({ parent }) => parent?.style !== 'banner',
+              name: 'links',
+              title: 'Enlaces de la sección',
+              type: 'array',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    defineField({ name: 'label', title: 'Texto', type: 'string', validation: (rule) => rule.required() }),
+                    defineField({ name: 'url', title: 'URL', type: 'url', validation: (rule) => rule.required() }),
+                    defineField({ name: 'note', title: 'Nota', type: 'string' }),
+                    defineField({ name: 'emoji', title: 'Emoji (solo fila normal)', type: 'string' }),
+                    defineField({
+                      name: 'style',
+                      title: 'Tipo visual',
+                      type: 'string',
+                      initialValue: 'row',
+                      options: {
+                        list: [
+                          { title: 'Fila normal', value: 'row' },
+                          { title: 'Banner', value: 'banner' },
+                        ],
+                        layout: 'radio',
+                      },
+                    }),
+                    defineField({
+                      name: 'thumbnail',
+                      title: 'Miniatura (solo banner)',
+                      type: 'image',
+                      options: { hotspot: true },
+                      hidden: ({ parent }) => parent?.style !== 'banner',
+                    }),
+                    defineField({
+                      name: 'ctaLabel',
+                      title: 'Texto boton (solo banner)',
+                      type: 'string',
+                      hidden: ({ parent }) => parent?.style !== 'banner',
+                    }),
+                  ],
+                  preview: {
+                    select: {
+                      title: 'label',
+                      subtitle: 'url',
+                      media: 'thumbnail',
+                    },
+                  },
+                },
+              ],
             }),
           ],
           preview: {
             select: {
-              title: 'label',
-              subtitle: 'url',
+              title: 'title',
+              subtitle: 'links.0.label',
+            },
+            prepare({ title, subtitle }) {
+              return {
+                title,
+                subtitle: subtitle ? `Primer enlace: ${subtitle}` : 'Sin enlaces',
+              };
             },
           },
+        },
+      ],
+    }),
+    defineField({
+      name: 'featuredLinks',
+      title: 'Links principales (legacy)',
+      type: 'array',
+      hidden: true,
+      readOnly: true,
+      description: 'Campo legado conservado para compatibilidad con datos antiguos.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({ name: 'label', title: 'Texto', type: 'string' }),
+            defineField({ name: 'url', title: 'URL', type: 'url' }),
+            defineField({ name: 'note', title: 'Nota', type: 'string' }),
+            defineField({ name: 'emoji', title: 'Emoji', type: 'string' }),
+            defineField({ name: 'featured', title: 'Destacado', type: 'boolean' }),
+            defineField({ name: 'style', title: 'Tipo visual', type: 'string' }),
+            defineField({ name: 'thumbnail', title: 'Miniatura', type: 'image', options: { hotspot: true } }),
+            defineField({ name: 'ctaLabel', title: 'Texto boton', type: 'string' }),
+          ],
         },
       ],
     }),
@@ -100,25 +148,14 @@ export const homepageType = defineType({
           fields: [
             defineField({ name: 'label', title: 'Nombre', type: 'string', validation: (rule) => rule.required() }),
             defineField({ name: 'url', title: 'URL', type: 'url', validation: (rule) => rule.required() }),
-            defineField({ name: 'short', title: 'Iniciales', type: 'string', validation: (rule) => rule.required().max(3) }),
           ],
           preview: {
             select: {
               title: 'label',
-              subtitle: 'short',
+              subtitle: 'url',
             },
           },
         },
-      ],
-    }),
-    defineField({
-      name: 'sections',
-      title: 'Textos de secciones',
-      type: 'object',
-      fields: [
-        defineField({ name: 'highlightedTitle', title: 'Título Destacado', type: 'string', initialValue: 'Destacado' }),
-        defineField({ name: 'servicesTitle', title: 'Título Servicios', type: 'string', initialValue: 'Servicios' }),
-        defineField({ name: 'moreLinksTitle', title: 'Título Más enlaces', type: 'string', initialValue: 'Más enlaces' }),
       ],
     }),
     defineField({

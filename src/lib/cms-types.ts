@@ -14,21 +14,24 @@ export interface Banner {
   buttonUrl: string;
 }
 
-export interface FeaturedLink {
+export interface LinkItem {
   label: string;
   url: string;
   note: string;
   emoji?: string;
-  featured?: boolean;
   style?: 'row' | 'banner';
   thumbnail?: string;
   ctaLabel?: string;
 }
 
+export interface LinkSection {
+  title: string;
+  links: LinkItem[];
+}
+
 export interface Social {
   label: string;
   url: string;
-  short: string;
 }
 
 export interface Seo {
@@ -46,8 +49,8 @@ export interface Sections {
 export interface SiteConfig {
   profile: Profile;
   banners: Banner[];
-  featuredLinks: FeaturedLink[];
+  featuredLinks: LinkItem[];
   socials: Social[];
   seo: Seo;
-  sections: Sections;
+  sections: LinkSection[];
 }
