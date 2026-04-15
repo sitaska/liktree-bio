@@ -20,6 +20,9 @@ export interface FeaturedLink {
   note: string;
   emoji?: string;
   featured?: boolean;
+  style?: 'row' | 'banner';
+  thumbnail?: string;
+  ctaLabel?: string;
 }
 
 export interface Social {
@@ -31,6 +34,13 @@ export interface Social {
 export interface Seo {
   title: string;
   description: string;
+  favicon?: string;
+}
+
+export interface Sections {
+  highlightedTitle: string;
+  servicesTitle: string;
+  moreLinksTitle: string;
 }
 
 export interface SiteConfig {
@@ -39,4 +49,5 @@ export interface SiteConfig {
   featuredLinks: FeaturedLink[];
   socials: Social[];
   seo: Seo;
+  sections: Sections;
 }

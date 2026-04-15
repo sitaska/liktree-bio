@@ -3,70 +3,151 @@ import Layout from '../layouts/Layout.astro';
 import { siteConfig as fallbackConfig } from '../data/site';
 import { getHomepageData } from '../lib/sanity';
 
-const { profile, banners, featuredLinks, socials, seo } = await getHomepageData(fallbackConfig);
+const { profile, banners, featuredLinks, socials, seo, sections } = await getHomepageData(fallbackConfig);
+const styledBannerLinks = featuredLinks.filter((link) => link.style === 'banner');
+const rowLinks = featuredLinks.filter((link) => link.style !== 'banner');
+const primaryLinks = rowLinks.filter((link) => Boolean(link.featured));
+const secondaryLinks = rowLinks.filter((link) => !link.featured);
+
+const socialIconSvg: Record<string, string> = {
+	instagram:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7m11 1.5a1.25 1.25 0 1 1-1.25 1.25A1.25 1.25 0 0 1 18 5.5M12 7a5 5 0 1 1-5 5 5 5 0 0 1 5-5m0 2a3 3 0 1 0 3 3 3 3 0 0 0-3-3Z"/></svg>',
+	tiktok:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.5 3c.3 2 1.8 3.8 3.8 4.3v2.8a7.2 7.2 0 0 1-3.8-1.2v6.4A5.3 5.3 0 1 1 11.2 10a5.8 5.8 0 0 1 1.2.1v2.8a2.8 2.8 0 0 0-1.1-.2 2.6 2.6 0 1 0 2.7 2.6V3h2.5Z"/></svg>',
+	pinterest:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.6 19.3 9 9 0 0 1 .1-2.7l1-4.2s-.3-.7-.3-1.7c0-1.6.9-2.7 2.1-2.7 1 0 1.5.7 1.5 1.6 0 1-.6 2.4-.9 3.8-.3 1.2.6 2.1 1.8 2.1 2.1 0 3.8-2.3 3.8-5.6 0-2.9-2.1-4.9-5.1-4.9A5.3 5.3 0 0 0 7 12.2c0 1 .4 2 1 2.6a.4.4 0 0 1 .1.4l-.4 1.6c0 .3-.2.4-.5.2-1.8-.8-2.9-3.3-2.9-5.2A7.8 7.8 0 0 1 12.6 4c4 0 7.1 2.8 7.1 6.7 0 4-2.5 7.2-6 7.2-1.1 0-2.2-.6-2.6-1.2l-.7 2.6a10.4 10.4 0 0 1-1 2.4A10 10 0 1 0 12 2Z"/></svg>',
+	email:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2m0 2v.5L12 13l8-5.5V7H4m16 10V9.9l-7.4 5.1a1 1 0 0 1-1.2 0L4 9.9V17h16Z"/></svg>',
+	linkedin:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6 8a1.8 1.8 0 1 1 0-3.5A1.8 1.8 0 0 1 6 8M4.5 9.5h3V20h-3V9.5m5.3 0h2.9V11h.1a3.2 3.2 0 0 1 2.9-1.6c3.1 0 3.7 2 3.7 4.7V20h-3v-5.1c0-1.2 0-2.8-1.7-2.8s-2 1.4-2 2.7V20h-3V9.5Z"/></svg>',
+	default:
+		'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m6.9 9h-3.1a15.7 15.7 0 0 0-1-5.2A8.1 8.1 0 0 1 18.9 11M12 4.1c.8 1.1 1.5 3.4 1.8 6H10.2c.3-2.6 1-4.9 1.8-6M4.9 13h3.1a15.7 15.7 0 0 0 1 5.2A8.1 8.1 0 0 1 4.9 13m3.1-2H4.9a8.1 8.1 0 0 1 4.2-5.2A15.7 15.7 0 0 0 8 11m2.2 2h3.6c-.3 2.6-1 4.9-1.8 6-.8-1.1-1.5-3.4-1.8-6m0-2c.3-2.6 1-4.9 1.8-6 .8 1.1 1.5 3.4 1.8 6h-3.6m4.7 7.2a15.7 15.7 0 0 0 1-5.2h3.1a8.1 8.1 0 0 1-4.1 5.2Z"/></svg>',
+};
+
+const getSocialIcon = (label: string) => {
+	const key = label.trim().toLowerCase();
+	return socialIconSvg[key] ?? socialIconSvg.default;
+};
 ---
 
-<Layout title={seo.title} description={seo.description}>
+<Layout title={seo.title} description={seo.description} favicon={seo.favicon}>
 	<main class="page">
-		<div class="ambient ambient-one"></div>
-		<div class="ambient ambient-two"></div>
+		<article class="profile-shell card">
+			<header class="shell-actions">
+				<button class="shell-badge shell-copy" type="button" title="Copiar enlace" aria-label="Copiar enlace" data-copy-link>
+					↗
+				</button>
+			</header>
 
-		<section class="card profile">
-			<div class="profile-top">
+			<section class="profile-top">
 				<img class="avatar" src={profile.avatar} alt={profile.name} loading="lazy" />
-				<div>
-					<p class="eyebrow">{profile.location}</p>
-					<h1>{profile.name}</h1>
-					<p class="tagline">{profile.tagline}</p>
-				</div>
-			</div>
-			<p class="description">{profile.description}</p>
-		</section>
+				<h1>{profile.name}</h1>
+				<p class="tagline">{profile.tagline}</p>
+				<p class="eyebrow">{profile.location}</p>
+			</section>
 
-		<section class="stack" aria-label="Banners destacados">
-			{
-				banners.map((banner) => (
-					<article class="card banner">
-						<img src={banner.image} alt={banner.title} loading="lazy" />
-						<div>
-							<h2>{banner.title}</h2>
-							<p>{banner.subtitle}</p>
-							<a href={banner.buttonUrl} target="_blank" rel="noreferrer">{banner.buttonLabel}</a>
-						</div>
-					</article>
-				))
-			}
-		</section>
-
-		<section class="stack" aria-label="Enlaces principales">
-			{
-				featuredLinks.map((link) => (
-					<a class:list={{ card: true, link: true, featured: Boolean(link.featured) }} href={link.url} target="_blank" rel="noreferrer">
-						<span class="icon">{link.emoji}</span>
-						<span>
-							<strong>{link.label}</strong>
-							<small>{link.note}</small>
-						</span>
-						<span aria-hidden="true">↗</span>
-					</a>
-				))
-			}
-		</section>
-
-		<footer class="card footer">
-			<div class="socials">
+			<nav class="socials" aria-label="Redes sociales">
 				{
 					socials.map((social) => (
 						<a href={social.url} target="_blank" rel="noreferrer" aria-label={social.label} title={social.label}>
-							{social.short}
+							<span class="social-icon" set:html={getSocialIcon(social.label)}></span>
+							<span class="sr-only">{social.label}</span>
 						</a>
 					))
 				}
-			</div>
-			<p>Hecho con amor para Las Cositas de Sita.</p>
-		</footer>
+			</nav>
+
+			<p class="description">{profile.description}</p>
+
+			{
+				(styledBannerLinks.length > 0 || banners.length > 0) && (
+					<section class="group" aria-label="Destacado">
+						<p class="group-title">{sections.highlightedTitle}</p>
+						<div class="group-list">
+							{styledBannerLinks.map((link) => (
+								<article class="banner-card">
+									{link.thumbnail && <img class="banner-thumb" src={link.thumbnail} alt={link.label} loading="lazy" />}
+									<div class="banner-copy">
+										<strong>{link.label}</strong>
+										<small>{link.note}</small>
+									</div>
+									<a class="banner-cta" href={link.url} target="_blank" rel="noreferrer">{link.ctaLabel ?? 'Ver'}</a>
+								</article>
+							))}
+							{banners.map((banner) => (
+								<article class="banner-card">
+									{banner.image && <img class="banner-thumb" src={banner.image} alt={banner.title} loading="lazy" />}
+									<div class="banner-copy">
+										<strong>{banner.title}</strong>
+										<small>{banner.subtitle}</small>
+									</div>
+									<a class="banner-cta" href={banner.buttonUrl} target="_blank" rel="noreferrer">{banner.buttonLabel || 'Ver'}</a>
+								</article>
+							))}
+						</div>
+					</section>
+				)
+			}
+
+			{
+				primaryLinks.length > 0 && (
+					<section class="group" aria-label="Servicios">
+						<p class="group-title">{sections.servicesTitle}</p>
+						<div class="group-list">
+							{primaryLinks.map((link) => (
+								<a class="row-link" href={link.url} target="_blank" rel="noreferrer">
+									<span class="row-icon">{link.emoji ?? '🔗'}</span>
+									<span class="row-copy">
+										<strong>{link.label}</strong>
+										<small>{link.note}</small>
+									</span>
+								</a>
+							))}
+						</div>
+					</section>
+				)
+			}
+
+			{
+				secondaryLinks.length > 0 && (
+					<section class="group" aria-label="Mas enlaces">
+						<p class="group-title">{sections.moreLinksTitle}</p>
+						<div class="group-list">
+							{secondaryLinks.map((link) => (
+								<a class="row-link" href={link.url} target="_blank" rel="noreferrer">
+									<span class="row-icon">{link.emoji ?? '🔗'}</span>
+									<span class="row-copy">
+										<strong>{link.label}</strong>
+										<small>{link.note}</small>
+									</span>
+								</a>
+							))}
+						</div>
+					</section>
+				)
+			}
+
+			<p class="signature">Las Cositas de Sita</p>
+		</article>
 	</main>
 </Layout>
+
+<script>
+	const copyLinkBtn = document.querySelector('[data-copy-link]');
+
+	copyLinkBtn?.addEventListener('click', async () => {
+		const original = copyLinkBtn.textContent;
+		try {
+			await navigator.clipboard.writeText('https://about.lascositasdesita.com');
+			copyLinkBtn.textContent = '✓';
+			setTimeout(() => {
+				copyLinkBtn.textContent = original;
+			}, 1200);
+		} catch {
+			window.prompt('Copia este enlace:', 'https://about.lascositasdesita.com');
+		}
+	});
+</script>
 
 <style>
 	:root {
@@ -76,68 +157,75 @@ const { profile, banners, featuredLinks, socials, seo } = await getHomepageData(
 		--sita-ink: #0a1128;
 		--sita-cream: #fafaf8;
 		--surface: #ffffffd9;
+		--text-primary: #0a1128;
+		--text-secondary: #2a355f;
+		--edge-color: #ffffff;
+		--shadow-color: #0a112812;
+		--social-border: #d7dbe4;
 	}
 
 	.page {
 		position: relative;
-		max-width: 760px;
+		max-width: 680px;
 		margin: 0 auto;
-		padding: 1.2rem 1rem 2rem;
-	}
-
-	.ambient {
-		position: fixed;
-		z-index: -1;
-		filter: blur(55px);
-		opacity: 0.45;
-		pointer-events: none;
-	}
-
-	.ambient-one {
-		top: -60px;
-		left: -40px;
-		width: 260px;
-		height: 260px;
-		background: radial-gradient(circle, var(--sita-orange), transparent 65%);
-	}
-
-	.ambient-two {
-		bottom: -90px;
-		right: -20px;
-		width: 290px;
-		height: 290px;
-		background: radial-gradient(circle, var(--sita-blue), transparent 68%);
+		padding: 1.2rem 1rem 2.2rem;
+		color: var(--text-primary);
 	}
 
 	.card {
 		background: var(--surface);
-		border: 1px solid #ffffff;
-		border-radius: 20px;
+		border: 1px solid var(--edge-color);
+		border-radius: 26px;
 		backdrop-filter: blur(8px);
-		box-shadow: 0 20px 45px #0a112812;
+		box-shadow: 0 20px 45px var(--shadow-color);
 	}
 
-	.profile {
-		padding: 1.15rem;
-		animation: rise 520ms ease-out;
+	.profile-shell {
+		padding: 1.25rem;
+		animation: rise 420ms ease-out;
+	}
+
+	.shell-actions {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		margin-bottom: 0.85rem;
+	}
+
+	.shell-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.05rem;
+		height: 2.05rem;
+		border-radius: 999px;
+		background: #ffffffc9;
+		border: 1px solid #d7deed;
+		font-size: 0.92rem;
+	}
+
+	.shell-copy {
+		cursor: pointer;
 	}
 
 	.profile-top {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 0.9rem;
+		text-align: center;
+		gap: 0.28rem;
 	}
 
 	.avatar {
-		width: 78px;
-		height: 78px;
+		width: 84px;
+		height: 84px;
 		object-fit: cover;
-		border-radius: 24px;
+		border-radius: 50%;
 		border: 3px solid var(--sita-blue);
 	}
 
 	.eyebrow {
-		margin: 0;
+		margin: 0.1rem 0 0;
 		font-size: 0.77rem;
 		letter-spacing: 0.09em;
 		text-transform: uppercase;
@@ -145,147 +233,246 @@ const { profile, banners, featuredLinks, socials, seo } = await getHomepageData(
 	}
 
 	h1 {
-		margin: 0.1rem 0 0;
-		font-size: 1.52rem;
+		margin: 0.3rem 0 0;
+		font-size: 2rem;
 		line-height: 1.2;
 	}
 
 	.tagline {
-		margin: 0.2rem 0 0;
+		margin: 0.05rem 0 0;
 		color: var(--sita-orange);
 		font-weight: 700;
 	}
 
 	.description {
-		margin: 0.9rem 0 0;
-		line-height: 1.55;
-		color: #2a355f;
-	}
-
-	.stack {
-		display: grid;
-		gap: 0.78rem;
-		margin-top: 0.82rem;
-	}
-
-	.banner {
-		display: grid;
-		grid-template-columns: minmax(95px, 130px) 1fr;
-		gap: 0.86rem;
-		padding: 0.72rem;
-		animation: rise 620ms ease-out;
-	}
-
-	.banner img {
-		width: 100%;
-		height: 100%;
-		max-height: 112px;
-		object-fit: cover;
-		border-radius: 14px;
-	}
-
-	.banner h2 {
-		margin: 0;
-		font-size: 1rem;
-	}
-
-	.banner p {
-		margin: 0.3rem 0 0.72rem;
-		font-size: 0.9rem;
-		color: var(--sita-slate);
-	}
-
-	.banner a {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.52rem 0.86rem;
-		border-radius: 10px;
-		text-decoration: none;
-		font-weight: 700;
-		background: var(--sita-ink);
-		color: var(--sita-cream);
-		transition: transform 160ms ease, background 160ms ease;
-	}
-
-	.banner a:hover {
-		transform: translateY(-2px);
-		background: var(--sita-blue);
-	}
-
-	.link {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		align-items: center;
-		gap: 0.8rem;
-		padding: 0.95rem 1rem;
-		color: inherit;
-		text-decoration: none;
-		animation: rise 720ms ease-out;
-		transition: transform 140ms ease, box-shadow 140ms ease;
-	}
-
-	.link:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 15px 24px #0a112826;
-	}
-
-	.link.featured {
-		border: 2px solid var(--sita-orange);
-	}
-
-	.link strong {
-		display: block;
-		font-size: 1rem;
-	}
-
-	.link small {
-		color: var(--sita-slate);
-	}
-
-	.icon {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 2.35rem;
-		height: 2.35rem;
-		font-size: 1.1rem;
-		border-radius: 0.9rem;
-		background: linear-gradient(135deg, #ff6b3533, #0066ff29);
-	}
-
-	.footer {
-		margin-top: 0.85rem;
-		padding: 1rem;
+		margin: 0.8rem 0 0;
 		text-align: center;
-		animation: rise 800ms ease-out;
+		line-height: 1.4;
+		font-size: 0.92rem;
+		color: var(--text-secondary);
 	}
 
 	.socials {
 		display: flex;
 		justify-content: center;
-		flex-wrap: wrap;
-		gap: 0.56rem;
+		gap: 0.6rem;
+		margin-top: 0.85rem;
 	}
 
 	.socials a {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 2.2rem;
-		height: 2.2rem;
+		width: 2.25rem;
+		height: 2.25rem;
 		border-radius: 999px;
 		text-decoration: none;
-		font-weight: 800;
 		color: var(--sita-ink);
-		background: #ffffff;
-		border: 1px solid #d7dbe4;
+		background: #ffffffd6;
+		border: 1px solid var(--social-border);
 	}
 
-	.footer p {
-		margin: 0.75rem 0 0;
-		font-size: 0.86rem;
+	.group {
+		margin-top: 1.15rem;
+}
+
+	.group-title {
+		margin: 0 0 0.55rem;
+		font-size: 1.02rem;
+		font-weight: 800;
+		text-align: center;
+		color: #1263e2;
+	}
+
+	.group-list {
+		display: grid;
+		gap: 0.58rem;
+	}
+
+	.banner-card {
+		display: grid;
+		grid-template-columns: 72px 1fr auto;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.72rem;
+		border-radius: 16px;
+		background: #ffffffd4;
+		border: 1px solid #d8deeb;
+	}
+
+	.banner-thumb {
+		width: 72px;
+		height: 72px;
+		border-radius: 12px;
+		object-fit: cover;
+	}
+
+	.banner-copy strong {
+		display: block;
+		font-size: 1rem;
+		line-height: 1.2;
+	}
+
+	.banner-copy small {
+		display: block;
+		margin-top: 0.22rem;
 		color: var(--sita-slate);
+		font-size: 0.84rem;
+		line-height: 1.3;
+	}
+
+	.banner-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.5rem 0.78rem;
+		border-radius: 10px;
+		text-decoration: none;
+		font-size: 0.84rem;
+		font-weight: 700;
+		color: #fff;
+		background: var(--sita-blue);
+	}
+
+	.row-link {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: center;
+		gap: 0.78rem;
+		padding: 0.88rem 0.95rem;
+		border-radius: 14px;
+		text-decoration: none;
+		color: inherit;
+		background: #ffffffd4;
+		border: 1px solid #d8deeb;
+		transition: transform 150ms ease;
+	}
+
+	.row-link:hover {
+		transform: translateY(-1px);
+	}
+
+	.row-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.95rem;
+		height: 1.95rem;
+		border-radius: 0.62rem;
+		background: linear-gradient(145deg, #0066ff24, #ff6b3522);
+		font-size: 1rem;
+	}
+
+	.row-copy {
+		display: block;
+	}
+
+	.row-copy strong {
+		display: block;
+		font-size: 1rem;
+		line-height: 1.2;
+	}
+
+	.row-copy small {
+		display: block;
+		margin-top: 0.1rem;
+		font-size: 0.84rem;
+		line-height: 1.25;
+		color: var(--sita-slate);
+	}
+
+	.signature {
+		margin: 1.2rem 0 0;
+		font-size: 0.9rem;
+		text-align: center;
+		color: var(--sita-slate);
+	}
+
+	.social-icon {
+		display: inline-flex;
+		width: 1.05rem;
+		height: 1.05rem;
+	}
+
+	.social-icon :global(svg) {
+		width: 100%;
+		height: 100%;
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		border: 0;
+	}
+
+	@media (max-width: 900px) {
+		.page {
+			max-width: 560px;
+		}
+
+		h1 {
+			font-size: 1.62rem;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.page {
+			padding: 0.85rem 0.68rem 1.4rem;
+		}
+
+		.profile-shell {
+			padding: 1rem;
+			border-radius: 20px;
+		}
+
+		.group-title {
+			font-size: 0.96rem;
+		}
+
+		.row-link {
+			padding: 0.76rem 0.85rem;
+		}
+
+		.banner-card {
+			grid-template-columns: 58px 1fr;
+			padding: 0.65rem;
+		}
+
+		.banner-thumb {
+			width: 58px;
+			height: 58px;
+		}
+
+		.banner-cta {
+			grid-column: 1 / -1;
+			margin-top: 0.4rem;
+		}
+
+		.row-copy strong {
+			font-size: 0.94rem;
+		}
+
+		.row-copy small {
+			font-size: 0.8rem;
+		}
+	}
+
+	@media (min-width: 900px) {
+		.page {
+			min-height: 100dvh;
+			display: grid;
+			align-items: center;
+		}
+
+		.profile-shell {
+			max-width: 494px;
+			margin: 0 auto;
+		}
 	}
 
 	@keyframes rise {
@@ -299,21 +486,4 @@ const { profile, banners, featuredLinks, socials, seo } = await getHomepageData(
 		}
 	}
 
-	@media (max-width: 640px) {
-		.page {
-			padding: 0.95rem 0.72rem 1.6rem;
-		}
-
-		h1 {
-			font-size: 1.32rem;
-		}
-
-		.banner {
-			grid-template-columns: 1fr;
-		}
-
-		.banner img {
-			max-height: 160px;
-		}
-	}
 </style>

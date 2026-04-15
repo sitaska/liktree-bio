@@ -54,6 +54,32 @@ export const homepageType = defineType({
             defineField({ name: 'note', title: 'Nota', type: 'string' }),
             defineField({ name: 'emoji', title: 'Emoji', type: 'string' }),
             defineField({ name: 'featured', title: 'Destacado', type: 'boolean', initialValue: false }),
+            defineField({
+              name: 'style',
+              title: 'Tipo visual',
+              type: 'string',
+              initialValue: 'row',
+              options: {
+                list: [
+                  { title: 'Fila normal', value: 'row' },
+                  { title: 'Banner', value: 'banner' },
+                ],
+                layout: 'radio',
+              },
+            }),
+            defineField({
+              name: 'thumbnail',
+              title: 'Miniatura (solo banner)',
+              type: 'image',
+              options: { hotspot: true },
+              hidden: ({ parent }) => parent?.style !== 'banner',
+            }),
+            defineField({
+              name: 'ctaLabel',
+              title: 'Texto boton (solo banner)',
+              type: 'string',
+              hidden: ({ parent }) => parent?.style !== 'banner',
+            }),
           ],
           preview: {
             select: {
@@ -86,12 +112,29 @@ export const homepageType = defineType({
       ],
     }),
     defineField({
+      name: 'sections',
+      title: 'Textos de secciones',
+      type: 'object',
+      fields: [
+        defineField({ name: 'highlightedTitle', title: 'Título Destacado', type: 'string', initialValue: 'Destacado' }),
+        defineField({ name: 'servicesTitle', title: 'Título Servicios', type: 'string', initialValue: 'Servicios' }),
+        defineField({ name: 'moreLinksTitle', title: 'Título Más enlaces', type: 'string', initialValue: 'Más enlaces' }),
+      ],
+    }),
+    defineField({
       name: 'seo',
       title: 'SEO',
       type: 'object',
       fields: [
         defineField({ name: 'title', title: 'Meta title', type: 'string', validation: (rule) => rule.required() }),
         defineField({ name: 'description', title: 'Meta description', type: 'text', rows: 3 }),
+        defineField({
+          name: 'favicon',
+          title: 'Favicon',
+          type: 'image',
+          options: { hotspot: false },
+          description: 'Sube un PNG cuadrado (ideal 512x512) para usarlo como icono del navegador.',
+        }),
       ],
     }),
   ],

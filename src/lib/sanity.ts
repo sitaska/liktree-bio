@@ -23,13 +23,13 @@ const client = isSanityConfigured
 
 const imageBuilder = client ? createImageUrlBuilder(client) : null;
 
-function imageUrl(source: unknown, fallback = ''): string {
+function imageUrl(source: unknown, fallback = '', width = 1200): string {
   if (!imageBuilder || !source) {
     return fallback;
   }
 
   try {
-    return imageBuilder.image(source).width(1200).quality(80).auto('format').url();
+    return imageBuilder.image(source).width(width).quality(80).auto('format').url();
   } catch {
     return fallback;
   }
@@ -40,6 +40,7 @@ const homepageQuery = `*[_type == "homepage"][0]{
   banners,
   featuredLinks,
   socials,
+  sections,
   seo
 }`;
 
@@ -79,6 +80,9 @@ export async function getHomepageData(fallback: SiteConfig): Promise<SiteConfig>
             note: String(link.note ?? ''),
             emoji: link.emoji ? String(link.emoji) : undefined,
             featured: Boolean(link.featured),
+            style: link.style === 'banner' ? 'banner' : 'row',
+            thumbnail: imageUrl(link.thumbnail, ''),
+            ctaLabel: link.ctaLabel ? String(link.ctaLabel) : undefined,
           }))
         : fallback.featuredLinks,
       socials: Array.isArray(data.socials)
@@ -91,6 +95,12 @@ export async function getHomepageData(fallback: SiteConfig): Promise<SiteConfig>
       seo: {
         title: data.seo?.title ?? fallback.seo.title,
         description: data.seo?.description ?? fallback.seo.description,
+        favicon: imageUrl(data.seo?.favicon, fallback.seo.favicon ?? '/favicon.svg', 96),
+      },
+      sections: {
+        highlightedTitle: data.sections?.highlightedTitle ?? fallback.sections.highlightedTitle,
+        servicesTitle: data.sections?.servicesTitle ?? fallback.sections.servicesTitle,
+        moreLinksTitle: data.sections?.moreLinksTitle ?? fallback.sections.moreLinksTitle,
       },
     };
   } catch {

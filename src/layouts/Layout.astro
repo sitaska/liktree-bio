@@ -2,12 +2,16 @@
 interface Props {
   title?: string;
   description?: string;
+	favicon?: string;
 }
 
 const {
   title = 'Las Cositas de Sita',
   description = 'Todos los enlaces importantes en un solo lugar.',
+	favicon,
 } = Astro.props;
+
+const faviconHref = favicon || '/favicon.svg';
 ---
 
 <!doctype html>
@@ -15,8 +19,8 @@ const {
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" href={faviconHref} />
+		<link rel="apple-touch-icon" href={faviconHref} />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -38,13 +42,31 @@ const {
 		box-sizing: border-box;
 	}
 
-	html,
-	body {
+	:global(html),
+	:global(body) {
 		margin: 0;
 		width: 100%;
 		min-height: 100%;
 		font-family: 'Plus Jakarta Sans', sans-serif;
-		background: #fafaf8;
 		color: #0a1128;
+	}
+
+	:global(body) {
+		position: relative;
+		background: #fafaf8;
+	}
+
+	:global(body)::before {
+		content: '';
+		position: fixed;
+		inset: 0;
+		z-index: -2;
+		pointer-events: none;
+		background-image:
+			radial-gradient(120% 80% at 12% 0%, #0066ff1f 0%, transparent 60%),
+			radial-gradient(100% 70% at 88% 8%, #ff6b351f 0%, transparent 58%),
+			linear-gradient(180deg, #fafaf8 0%, #f6f8ff 42%, #fafaf8 100%);
+		background-repeat: no-repeat;
+		background-size: cover;
 	}
 </style>
