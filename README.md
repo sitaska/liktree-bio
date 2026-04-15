@@ -34,7 +34,7 @@ Este proyecto ya esta conectado a Sanity CMS para que puedas:
 
 ### 3) Publicar cambios en tu web
 
-Cada cambio que publiques en Sanity se reflejara en tu web al hacer deploy en Vercel.
+La web usa renderizado en servidor (SSR) en Vercel, asi que cada cambio publicado en Sanity se refleja automaticamente sin redeploy manual.
 Tu pagina sigue funcionando aunque Sanity no este configurado, porque usa fallback local.
 
 ## Acceso solo para ti
@@ -88,8 +88,7 @@ Se encuentra en variables CSS dentro de src/pages/index.astro.
 2. En Vercel, pulsa Add New Project e importa el repositorio.
 3. Framework Preset: Astro (Vercel lo detecta automaticamente).
 4. Build Command: npm run build
-5. Output Directory: dist
-6. Pulsa Deploy.
+5. Pulsa Deploy.
 
 Variables recomendadas en Vercel:
 
@@ -103,9 +102,10 @@ Variables recomendadas en Vercel:
 
 1. En Vercel: Project Settings > Domains > Add.
 2. Agrega about.lascositasdesita.com.
-3. En tu proveedor DNS, crea un CNAME:
+3. En tu proveedor DNS, crea este registro recomendado:
+	Tipo: A
 	Host: about
-	Value: cname.vercel-dns.com
+	Valor: 76.76.21.21
 4. Espera propagacion y verifica en Vercel.
 
 ## Consejo de mantenimiento

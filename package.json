@@ -15,6 +15,7 @@
     "cms:deploy": "sanity deploy"
   },
   "dependencies": {
+    "@astrojs/vercel": "^10.0.4",
     "@sanity/client": "^7.21.0",
     "@sanity/image-url": "^2.1.1",
     "astro": "^6.1.6",
