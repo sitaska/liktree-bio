@@ -1,0 +1,24 @@
+{
+  "name": "linktree-sita",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "cms:dev": "sanity dev",
+    "cms:build": "sanity build",
+    "cms:deploy": "sanity deploy"
+  },
+  "dependencies": {
+    "@sanity/client": "^7.21.0",
+    "@sanity/image-url": "^2.1.1",
+    "astro": "^6.1.6",
+    "sanity": "^5.20.0",
+    "styled-components": "^6.4.0"
+  }
+}
