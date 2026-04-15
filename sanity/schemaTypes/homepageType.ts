@@ -45,6 +45,8 @@ export const homepageType = defineType({
       name: 'sections',
       title: 'Secciones de enlaces',
       type: 'array',
+      description:
+        'Pulsa "Add item" para crear una nueva sección. En cada sección puedes cambiar el título y añadir sus propios enlaces.',
       of: [
         {
           type: 'object',
@@ -54,6 +56,7 @@ export const homepageType = defineType({
               name: 'links',
               title: 'Enlaces de la sección',
               type: 'array',
+              description: 'Añade aquí los enlaces que pertenecen a esta sección.',
               of: [
                 {
                   type: 'object',

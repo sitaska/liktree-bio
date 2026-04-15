@@ -83,17 +83,17 @@ export async function getHomepageData(fallback: SiteConfig): Promise<SiteConfig>
         }))
       : [];
 
-    const cmsSections = Array.isArray(data.sections)
+    const hasCmsSections = Array.isArray(data.sections);
+    const cmsSections = hasCmsSections
       ? data.sections
           .map((section: Record<string, unknown>) => ({
-            title: String(section.title ?? '').trim(),
+            title: String(section.title ?? '').trim() || 'Nueva sección',
             links: Array.isArray(section.links)
               ? section.links
                   .map((link: Record<string, unknown>) => mapLink(link))
                   .filter((link: { label: string; url: string }) => Boolean(link.label) && Boolean(link.url))
               : [],
           }))
-          .filter((section: { title: string; links: unknown[] }) => Boolean(section.title) && section.links.length > 0)
       : [];
 
     const legacyBannerLinks = [...legacyBanners, ...legacyFeaturedLinks.filter((link: { style?: string }) => link.style === 'banner')];
@@ -133,7 +133,11 @@ export async function getHomepageData(fallback: SiteConfig): Promise<SiteConfig>
         description: data.seo?.description ?? fallback.seo.description,
         favicon: imageUrl(data.seo?.favicon, fallback.seo.favicon ?? '/favicon.svg', 96),
       },
-      sections: cmsSections.length > 0 ? cmsSections : fallbackLegacySections.length > 0 ? fallbackLegacySections : fallback.sections,
+      sections: hasCmsSections
+        ? cmsSections
+        : fallbackLegacySections.length > 0
+          ? fallbackLegacySections
+          : fallback.sections,
     };
   } catch {
     return fallback;
